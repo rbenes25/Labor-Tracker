@@ -1,0 +1,1786 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Farm Labor Tracker</title>
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(to bottom right, #f0fdf4, #dbeafe);
+            min-height: 100vh;
+            padding: 1rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .login-container {
+            max-width: 400px;
+            margin: 4rem auto;
+        }
+
+        .header {
+            background: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .header-right {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .user-info {
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+
+        h1 {
+            color: #166534;
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        h2 {
+            color: #1f2937;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        h3 {
+            color: #1f2937;
+            font-size: 1.25rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .subtitle {
+            color: #6b7280;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 1rem;
+            white-space: nowrap;
+        }
+
+        .btn-small {
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+        }
+
+        .btn-primary {
+            background: #16a34a;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #15803d;
+        }
+
+        .btn-secondary {
+            background: #e5e7eb;
+            color: #374151;
+        }
+
+        .btn-secondary:hover {
+            background: #d1d5db;
+        }
+
+        .btn-danger {
+            background: #dc2626;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #b91c1c;
+        }
+
+        .btn:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            padding: 0.75rem 1.5rem;
+            background: white;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-weight: 600;
+            color: #6b7280;
+            transition: all 0.2s;
+        }
+
+        .tab.active {
+            background: #16a34a;
+            color: white;
+        }
+
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .card-icon {
+            width: 3rem;
+            height: 3rem;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .icon-blue { background: #dbeafe; color: #2563eb; }
+        .icon-green { background: #dcfce7; color: #16a34a; }
+        .icon-purple { background: #f3e8ff; color: #9333ea; }
+        .icon-orange { background: #fed7aa; color: #ea580c; }
+
+        .card-label {
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+
+        .card-value {
+            font-size: 1.75rem;
+            font-weight: bold;
+            color: #1f2937;
+        }
+
+        .filters-section {
+            background: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .filters-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .filters-group {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            flex: 1;
+        }
+
+        .filter-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .filter-item label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        select, input {
+            padding: 0.5rem 1rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            border-color: #16a34a;
+            box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.1);
+        }
+
+        .entries-table {
+            background: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: #f9fafb;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        th {
+            padding: 1rem;
+            text-align: left;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        td {
+            padding: 1rem;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        tbody tr:hover {
+            background: #f9fafb;
+        }
+
+        .operation-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            background: #dcfce7;
+            color: #166534;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .action-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0.25rem;
+            color: #6b7280;
+            transition: color 0.2s;
+        }
+
+        .action-btn:hover {
+            color: #1f2937;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #6b7280;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            overflow-y: auto;
+            padding: 1rem;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 600px;
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #6b7280;
+            cursor: pointer;
+            padding: 0;
+            width: 2rem;
+            height: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .close-btn:hover {
+            color: #1f2937;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .form-group label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            padding: 0.5rem 1rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        textarea {
+            resize: vertical;
+            font-family: inherit;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .form-actions button {
+            flex: 1;
+        }
+
+        .settings-section {
+            background: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .settings-section h3 {
+            color: #1f2937;
+            margin-bottom: 1rem;
+        }
+
+        .rate-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .rate-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            background: #f9fafb;
+            border-radius: 0.5rem;
+        }
+
+        .rate-name {
+            font-weight: 500;
+        }
+
+        .rate-value {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .rate-input {
+            width: 100px;
+            padding: 0.25rem 0.5rem;
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        .footer {
+            text-align: center;
+            color: #6b7280;
+            font-size: 0.875rem;
+            margin-top: 2rem;
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .alert-info {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .alert-success {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .alert-warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+        }
+
+        .email-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .email-item {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .email-item input {
+            flex: 1;
+        }
+
+        .info-box {
+            background: #f0f9ff;
+            border: 1px solid #bae6fd;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .info-box h4 {
+            color: #0c4a6e;
+            margin-bottom: 0.5rem;
+        }
+
+        .info-box p {
+            color: #075985;
+            font-size: 0.875rem;
+            line-height: 1.5;
+        }
+
+        .info-box code {
+            background: #e0f2fe;
+            padding: 0.125rem 0.375rem;
+            border-radius: 0.25rem;
+            font-family: monospace;
+        }
+
+        .email-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-top: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 1.5rem; }
+            .header-content { flex-direction: column; align-items: stretch; }
+            .filters-content { flex-direction: column; align-items: stretch; }
+            .hide-mobile { display: none; }
+            .tabs { justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Page -->
+    <div id="loginPage" class="page active">
+        <div class="login-container">
+            <div class="card">
+                <h1 style="text-align: center;">Farm Labor Tracker</h1>
+                <p style="text-align: center; color: #6b7280; margin-bottom: 2rem;">Please log in to continue</p>
+                
+                <form id="loginForm" onsubmit="login(event)">
+                    <div class="form-group">
+                        <label>Username</label>
+                        <input type="text" id="loginUsername" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="loginPassword" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">Log In</button>
+                </form>
+                
+                <div id="loginError" style="display: none; margin-top: 1rem; padding: 0.75rem; background: #fee2e2; color: #991b1b; border-radius: 0.5rem; text-align: center;"></div>
+                
+                <div style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid #e5e7eb;">
+                    <p style="text-align: center; color: #6b7280; font-size: 0.875rem;">Default Manager Login:</p>
+                    <p style="text-align: center; color: #6b7280; font-size: 0.875rem;"><strong>manager / admin123</strong></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App -->
+    <div id="mainApp" class="page">
+        <div class="container">
+            <!-- Header -->
+            <div class="header">
+                <div class="header-content">
+                    <div>
+                        <h1>Farm Labor Tracker</h1>
+                        <p class="subtitle">Track field operations and worker hours</p>
+                    </div>
+                    <div class="header-right">
+                        <div class="user-info">
+                            Logged in as: <strong id="currentUser"></strong>
+                        </div>
+                        <button class="btn btn-secondary btn-small" onclick="logout()">Log Out</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('entries')">My Entries</button>
+                <button class="tab" id="managerTab" onclick="switchTab('manager')" style="display: none;">Manager Settings</button>
+            </div>
+
+            <!-- Entries Page -->
+            <div id="entriesPage" class="page active">
+                <div style="margin-bottom: 1.5rem;">
+                    <button class="btn btn-primary" onclick="openModal()">+ New Entry</button>
+                </div>
+
+                <!-- Summary Cards -->
+                <div class="summary-cards">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon icon-blue">⏱️</div>
+                            <div>
+                                <p class="card-label">Total Hours</p>
+                                <p class="card-value" id="totalHours">0.00</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon icon-green">📅</div>
+                            <div>
+                                <p class="card-label">Total Entries</p>
+                                <p class="card-value" id="totalEntries">0</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card" id="totalPayCard" style="display: none;">
+                        <div class="card-header">
+                            <div class="card-icon icon-orange">💰</div>
+                            <div>
+                                <p class="card-label">Total Pay</p>
+                                <p class="card-value" id="totalPay">$0.00</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card" id="activeWorkersCard">
+                        <div class="card-header">
+                            <div class="card-icon icon-purple">👤</div>
+                            <div>
+                                <p class="card-label">Active Workers</p>
+                                <p class="card-value" id="activeWorkers">0</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Email Report Reminder (Manager only) -->
+                <div id="emailReminder" style="display: none;"></div>
+
+                <!-- Filters -->
+                <div class="filters-section">
+                    <div class="filters-content">
+                        <div class="filters-group">
+                            <div class="filter-item">
+                                <label>Filter by Operation</label>
+                                <select id="filterOperation" onchange="filterEntries()">
+                                    <option value="all">All Operations</option>
+                                </select>
+                            </div>
+                            <div class="filter-item" id="workerFilterItem" style="display: none;">
+                                <label>Filter by Worker</label>
+                                <select id="filterWorker" onchange="filterEntries()">
+                                    <option value="all">All Workers</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button class="btn btn-primary" onclick="exportToCSV()" id="exportBtn">📥 Export CSV</button>
+                            <button class="btn btn-primary" id="sendReportsBtn" onclick="sendEmailReports()" style="display: none;">📧 Send Reports</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Entries Table -->
+                <div class="entries-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th id="workerColumn" style="display: none;">Worker</th>
+                                <th>Hours</th>
+                                <th>Operation</th>
+                                <th class="hide-mobile">Field</th>
+                                <th class="hide-mobile">Crop</th>
+                                <th id="rateColumn" style="display: none;">Rate</th>
+                                <th id="payColumn" style="display: none;">Pay</th>
+                                <th style="text-align: right;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="entriesTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Manager Settings Page -->
+            <div id="managerPage" class="page">
+                <div class="alert alert-info">
+                    <strong>Manager View:</strong> Configure default pay rates, manage workers, and set up email reports
+                </div>
+
+                <!-- Email Settings -->
+                <div class="settings-section">
+                    <h3>📧 Email Report Settings</h3>
+                    
+                    <div class="info-box">
+                        <h4>Setup Instructions:</h4>
+                        <p>1. Create a free account at <a href="https://www.emailjs.com/" target="_blank" style="color: #2563eb;">EmailJS.com</a></p>
+                        <p>2. Add an email service (Gmail, Outlook, etc.)</p>
+                        <p>3. Create an email template with these variables: <code>{{manager_name}}</code>, <code>{{report_period}}</code>, <code>{{report_html}}</code></p>
+                        <p>4. Copy your credentials below</p>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>EmailJS Public Key</label>
+                            <input type="text" id="emailPublicKey" placeholder="Your public key">
+                        </div>
+                        <div class="form-group">
+                            <label>EmailJS Service ID</label>
+                            <input type="text" id="emailServiceId" placeholder="service_xxxxxx">
+                        </div>
+                        <div class="form-group">
+                            <label>EmailJS Template ID</label>
+                            <input type="text" id="emailTemplateId" placeholder="template_xxxxxx">
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-top: 1rem;">
+                        <label>Manager Email Addresses (to receive summary reports)</label>
+                        <div class="email-list" id="managerEmailList">
+                            <div class="email-item">
+                                <input type="email" placeholder="manager@farm.com" id="managerEmail1">
+                                <button class="btn btn-small btn-secondary" onclick="addManagerEmail()">+ Add</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-top: 1rem;">
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="sendWorkerReports">
+                            <label for="sendWorkerReports">Send individual reports to workers</label>
+                        </div>
+                    </div>
+
+                    <div class="email-status" id="lastSentStatus"></div>
+                </div>
+
+                <!-- Operation Rates -->
+                <div class="settings-section">
+                    <h3>💵 Default Operation Rates</h3>
+                    <p style="color: #6b7280; margin-bottom: 1rem; font-size: 0.875rem;">Set default hourly rates for each operation type</p>
+                    <div class="rate-list" id="operationRatesList"></div>
+                </div>
+
+                <!-- Workers Management -->
+                <div class="settings-section">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h3 style="margin: 0;">👷 Workers & Custom Rates</h3>
+                        <button class="btn btn-primary btn-small" onclick="openWorkerModal()">+ Add Worker</button>
+                    </div>
+                    <p style="color: #6b7280; margin-bottom: 1rem; font-size: 0.875rem;">Worker-specific rates override operation defaults</p>
+                    <div class="rate-list" id="workersList"></div>
+                </div>
+
+                <div style="margin-top: 2rem;">
+                    <button class="btn btn-primary" onclick="saveSettings()">Save All Settings</button>
+                </div>
+                
+                <div id="saveSuccess" class="alert alert-success" style="display: none; margin-top: 1rem;">
+                    Settings saved successfully!
+                </div>
+            </div>
+
+            <div class="footer">
+                <p>Data is saved locally in your browser. Export regularly to back up your records.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Entry Modal -->
+    <div class="modal" id="entryModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">New Labor Entry</h2>
+                <button class="close-btn" onclick="closeModal()">×</button>
+            </div>
+            <form id="entryForm" onsubmit="saveEntry(event)">
+                <div class="form-grid">
+                    <div class="form-group" id="workerSelectGroup" style="display: none;">
+                        <label>Worker *</label>
+                        <select id="workerSelect" required></select>
+                    </div>
+                    <div class="form-group">
+                        <label>Date *</label>
+                        <input type="date" id="date" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Hours Worked *</label>
+                        <input type="number" id="hoursWorked" step="0.25" required placeholder="8.5">
+                    </div>
+                    <div class="form-group">
+                        <label>Operation *</label>
+                        <select id="operation" required>
+                            <option value="">Select operation</option>
+                            <option value="Planting">Planting</option>
+                            <option value="Tillage">Tillage</option>
+                            <option value="Spraying">Spraying</option>
+                            <option value="Fertilizing">Fertilizing</option>
+                            <option value="Scouting">Scouting</option>
+                            <option value="Harvesting">Harvesting</option>
+                            <option value="Hauling">Hauling</option>
+                            <option value="Equipment Maintenance">Equipment Maintenance</option>
+                            <option value="Irrigation">Irrigation</option>
+                            <option value="Field Prep">Field Prep</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Field/Location</label>
+                        <input type="text" id="fieldLocation" placeholder="North 40, Section 12">
+                    </div>
+                    <div class="form-group">
+                        <label>Crop Type</label>
+                        <select id="cropType">
+                            <option value="">Select crop</option>
+                            <option value="Corn">Corn</option>
+                            <option value="Soybeans">Soybeans</option>
+                            <option value="Wheat">Wheat</option>
+                            <option value="Cotton">Cotton</option>
+                            <option value="Rice">Rice</option>
+                            <option value="Sorghum">Sorghum</option>
+                            <option value="Barley">Barley</option>
+                            <option value="Oats">Oats</option>
+                            <option value="Sunflowers">Sunflowers</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group full-width">
+                        <label>Equipment Used</label>
+                        <input type="text" id="equipment" placeholder="John Deere 8R, Sprayer, etc.">
+                    </div>
+                    <div class="form-group full-width">
+                        <label>Notes</label>
+                        <textarea id="notes" rows="3" placeholder="Additional details..."></textarea>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Save Entry</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Worker Modal -->
+    <div class="modal" id="workerModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add/Edit Worker</h2>
+                <button class="close-btn" onclick="closeWorkerModal()">×</button>
+            </div>
+            <form id="workerForm" onsubmit="saveWorker(event)">
+                <div class="form-group">
+                    <label>Worker Name *</label>
+                    <input type="text" id="workerName" required placeholder="John Doe">
+                </div>
+                <div class="form-group">
+                    <label>Username *</label>
+                    <input type="text" id="workerUsername" required placeholder="johndoe">
+                </div>
+                <div class="form-group">
+                    <label>Password *</label>
+                    <input type="password" id="workerPassword" required placeholder="Enter password">
+                </div>
+                <div class="form-group">
+                    <label>Worker Email (for receiving reports)</label>
+                    <input type="email" id="workerEmail" placeholder="worker@email.com">
+                </div>
+                <div class="form-group">
+                    <label>Custom Hourly Rate (optional - overrides operation rates)</label>
+                    <input type="number" id="workerRate" step="0.01" placeholder="Leave blank to use operation rates">
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Save Worker</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeWorkerModal()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Data storage
+        let entries = [];
+        let currentLoggedInUser = null;
+        let editingId = null;
+        let editingWorkerId = null;
+
+        // Default settings
+        let settings = {
+            operationRates: {
+                'Planting': 18.00,
+                'Tillage': 16.00,
+                'Spraying': 20.00,
+                'Fertilizing': 18.00,
+                'Scouting': 15.00,
+                'Harvesting': 22.00,
+                'Hauling': 17.00,
+                'Equipment Maintenance': 19.00,
+                'Irrigation': 16.00,
+                'Field Prep': 15.00,
+                'Other': 15.00
+            },
+            workers: [
+                {
+                    id: 1,
+                    name: 'Manager',
+                    username: 'manager',
+                    password: 'admin123',
+                    role: 'manager',
+                    email: '',
+                    customRate: null
+                }
+            ],
+            email: {
+                publicKey: '',
+                serviceId: '',
+                templateId: '',
+                managerEmails: [],
+                sendWorkerReports: false,
+                lastSent: null
+            }
+        };
+
+        const operations = Object.keys(settings.operationRates);
+
+        // Initialize
+        function init() {
+            loadData();
+            loadSettings();
+            // Initialize EmailJS if configured
+            if (settings.email.publicKey) {
+                emailjs.init(settings.email.publicKey);
+            }
+        }
+
+        // Load data from localStorage
+        function loadData() {
+            const saved = localStorage.getItem('farmLaborEntries');
+            if (saved) {
+                entries = JSON.parse(saved);
+            }
+        }
+
+        // Load settings from localStorage
+        function loadSettings() {
+            const saved = localStorage.getItem('farmLaborSettings');
+            if (saved) {
+                const loadedSettings = JSON.parse(saved);
+                // Merge with defaults to handle new fields
+                settings = {
+                    ...settings,
+                    ...loadedSettings,
+                    email: { ...settings.email, ...loadedSettings.email }
+                };
+            }
+        }
+
+        // Save data to localStorage
+        function saveData() {
+            localStorage.setItem('farmLaborEntries', JSON.stringify(entries));
+        }
+
+        // Save settings to localStorage
+        function saveSettingsToStorage() {
+            localStorage.setItem('farmLaborSettings', JSON.stringify(settings));
+        }
+
+        // Check if email reports are due
+        function checkEmailReportDue() {
+            if (currentLoggedInUser?.role !== 'manager') return;
+            
+            const lastSent = settings.email.lastSent ? new Date(settings.email.lastSent) : null;
+            const now = new Date();
+            const daysSinceLastSent = lastSent ? Math.floor((now - lastSent) / (1000 * 60 * 60 * 24)) : 999;
+            
+            if (daysSinceLastSent >= 14) {
+                const reminderDiv = document.getElementById('emailReminder');
+                reminderDiv.innerHTML = `
+                    <div class="alert alert-warning">
+                        <strong>⏰ Email Report Reminder:</strong> It's been ${daysSinceLastSent} days since the last report was sent. 
+                        <button class="btn btn-primary btn-small" onclick="sendEmailReports()" style="margin-left: 1rem;">Send Now</button>
+                    </div>
+                `;
+                reminderDiv.style.display = 'block';
+            } else {
+                document.getElementById('emailReminder').style.display = 'none';
+            }
+        }
+
+        // Login
+        function login(event) {
+            event.preventDefault();
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            const user = settings.workers.find(w => w.username === username && w.password === password);
+            
+            if (user) {
+                currentLoggedInUser = user;
+                document.getElementById('loginPage').classList.remove('active');
+                document.getElementById('mainApp').classList.add('active');
+                document.getElementById('currentUser').textContent = user.name;
+                
+                // Show manager tab if manager
+                if (user.role === 'manager') {
+                    document.getElementById('managerTab').style.display = 'block';
+                    document.getElementById('workerColumn').style.display = 'table-cell';
+                    document.getElementById('rateColumn').style.display = 'table-cell';
+                    document.getElementById('payColumn').style.display = 'table-cell';
+                    document.getElementById('workerFilterItem').style.display = 'block';
+                    document.getElementById('totalPayCard').style.display = 'block';
+                    document.getElementById('activeWorkersCard').style.display = 'block';
+                    document.getElementById('workerSelectGroup').style.display = 'block';
+                    document.getElementById('sendReportsBtn').style.display = 'block';
+                    checkEmailReportDue();
+                } else {
+                    // Worker view
+                    document.getElementById('activeWorkersCard').style.display = 'none';
+                }
+                
+                updateDisplay();
+            } else {
+                const errorDiv = document.getElementById('loginError');
+                errorDiv.textContent = 'Invalid username or password';
+                errorDiv.style.display = 'block';
+            }
+        }
+
+        // Logout
+        function logout() {
+            currentLoggedInUser = null;
+            document.getElementById('mainApp').classList.remove('active');
+            document.getElementById('loginPage').classList.add('active');
+            document.getElementById('loginForm').reset();
+            document.getElementById('loginError').style.display = 'none';
+            switchTab('entries');
+        }
+
+        // Switch tabs
+        function switchTab(tab) {
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(t => t.classList.remove('active'));
+            
+            document.getElementById('entriesPage').classList.remove('active');
+            document.getElementById('managerPage').classList.remove('active');
+            
+            if (tab === 'entries') {
+                document.getElementById('entriesPage').classList.add('active');
+                tabs[0].classList.add('active');
+                updateDisplay();
+                checkEmailReportDue();
+            } else if (tab === 'manager') {
+                document.getElementById('managerPage').classList.add('active');
+                tabs[1].classList.add('active');
+                loadManagerSettings();
+            }
+        }
+
+        // Load manager settings
+        function loadManagerSettings() {
+            // Load email settings
+            document.getElementById('emailPublicKey').value = settings.email.publicKey || '';
+            document.getElementById('emailServiceId').value = settings.email.serviceId || '';
+            document.getElementById('emailTemplateId').value = settings.email.templateId || '';
+            document.getElementById('sendWorkerReports').checked = settings.email.sendWorkerReports || false;
+            
+            // Load manager emails
+            loadManagerEmails();
+            
+            // Load operation rates
+            const opRatesList = document.getElementById('operationRatesList');
+            opRatesList.innerHTML = operations.map(op => `
+                <div class="rate-item">
+                    <span class="rate-name">${op}</span>
+                    <div class="rate-value">
+                        $<input type="number" class="rate-input" step="0.01" 
+                               value="${settings.operationRates[op]}" 
+                               id="rate_${op.replace(/\s+/g, '_')}"> / hour
+                    </div>
+                </div>
+            `).join('');
+            
+            // Load workers list
+            loadWorkersList();
+            
+            // Update last sent status
+            updateLastSentStatus();
+        }
+
+        // Load manager emails
+        function loadManagerEmails() {
+            const emailList = document.getElementById('managerEmailList');
+            emailList.innerHTML = '';
+            
+            if (settings.email.managerEmails.length === 0) {
+                emailList.innerHTML = `
+                    <div class="email-item">
+                        <input type="email" placeholder="manager@farm.com" id="managerEmail1">
+                        <button class="btn btn-small btn-secondary" onclick="addManagerEmail()">+ Add</button>
+                    </div>
+                `;
+            } else {
+                settings.email.managerEmails.forEach((email, index) => {
+                    emailList.innerHTML += `
+                        <div class="email-item">
+                            <input type="email" value="${email}" id="managerEmail${index + 1}">
+                            <button class="btn btn-small btn-danger" onclick="removeManagerEmail(${index})">Remove</button>
+                        </div>
+                    `;
+                });
+                emailList.innerHTML += `
+                    <div class="email-item">
+                        <input type="email" placeholder="Add another email..." id="managerEmailNew">
+                        <button class="btn btn-small btn-secondary" onclick="addManagerEmail()">+ Add</button>
+                    </div>
+                `;
+            }
+        }
+
+        // Add manager email
+        function addManagerEmail() {
+            const newEmailInput = document.getElementById('managerEmailNew') || document.getElementById('managerEmail1');
+            const newEmail = newEmailInput?.value.trim();
+            
+            if (newEmail && newEmail.includes('@')) {
+                if (!settings.email.managerEmails) {
+                    settings.email.managerEmails = [];
+                }
+                settings.email.managerEmails.push(newEmail);
+                saveSettingsToStorage();
+                loadManagerEmails();
+            }
+        }
+
+        // Remove manager email
+        function removeManagerEmail(index) {
+            settings.email.managerEmails.splice(index, 1);
+            saveSettingsToStorage();
+            loadManagerEmails();
+        }
+
+        // Update last sent status
+        function updateLastSentStatus() {
+            const statusDiv = document.getElementById('lastSentStatus');
+            if (settings.email.lastSent) {
+                const lastSent = new Date(settings.email.lastSent);
+                const daysSince = Math.floor((new Date() - lastSent) / (1000 * 60 * 60 * 24));
+                statusDiv.textContent = `Last report sent: ${lastSent.toLocaleDateString()} (${daysSince} days ago)`;
+            } else {
+                statusDiv.textContent = 'No reports sent yet';
+            }
+        }
+
+        // Load workers list
+        function loadWorkersList() {
+            const workersList = document.getElementById('workersList');
+            const workers = settings.workers.filter(w => w.role !== 'manager');
+            
+            if (workers.length === 0) {
+                workersList.innerHTML = '<p style="color: #6b7280; font-style: italic;">No workers added yet</p>';
+            } else {
+                workersList.innerHTML = workers.map(worker => `
+                    <div class="rate-item">
+                        <div>
+                            <span class="rate-name">${worker.name}</span>
+                            <div style="font-size: 0.75rem; color: #6b7280;">
+                                Username: ${worker.username}
+                                ${worker.email ? ` | Email: ${worker.email}` : ''}
+                            </div>
+                        </div>
+                        <div class="rate-value">
+                            ${worker.customRate ? `$${worker.customRate.toFixed(2)} / hour` : 'Uses operation rates'}
+                            <button class="action-btn" onclick="editWorker(${worker.id})" title="Edit">✏️</button>
+                            <button class="action-btn" onclick="deleteWorker(${worker.id})" title="Delete">🗑️</button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // Save settings
+        function saveSettings() {
+            // Save email settings
+            settings.email.publicKey = document.getElementById('emailPublicKey').value;
+            settings.email.serviceId = document.getElementById('emailServiceId').value;
+            settings.email.templateId = document.getElementById('emailTemplateId').value;
+            settings.email.sendWorkerReports = document.getElementById('sendWorkerReports').checked;
+            
+            // Initialize EmailJS if configured
+            if (settings.email.publicKey) {
+                emailjs.init(settings.email.publicKey);
+            }
+            
+            // Save manager emails
+            const emailInputs = document.querySelectorAll('#managerEmailList input[type="email"]');
+            settings.email.managerEmails = [];
+            emailInputs.forEach(input => {
+                if (input.value && input.value.includes('@') && input.id !== 'managerEmailNew') {
+                    settings.email.managerEmails.push(input.value);
+                }
+            });
+            
+            // Save operation rates
+            operations.forEach(op => {
+                const input = document.getElementById(`rate_${op.replace(/\s+/g, '_')}`);
+                if (input) {
+                    settings.operationRates[op] = parseFloat(input.value) || 0;
+                }
+            });
+            
+            saveSettingsToStorage();
+            
+            const successDiv = document.getElementById('saveSuccess');
+            successDiv.style.display = 'block';
+            setTimeout(() => {
+                successDiv.style.display = 'none';
+            }, 3000);
+            
+            updateDisplay();
+        }
+
+        // Open worker modal
+        function openWorkerModal() {
+            editingWorkerId = null;
+            document.getElementById('workerForm').reset();
+            document.getElementById('workerModal').classList.add('active');
+        }
+
+        // Close worker modal
+        function closeWorkerModal() {
+            document.getElementById('workerModal').classList.remove('active');
+            editingWorkerId = null;
+        }
+
+        // Edit worker
+        function editWorker(workerId) {
+            const worker = settings.workers.find(w => w.id === workerId);
+            if (worker) {
+                editingWorkerId = workerId;
+                document.getElementById('workerName').value = worker.name;
+                document.getElementById('workerUsername').value = worker.username;
+                document.getElementById('workerPassword').value = worker.password;
+                document.getElementById('workerEmail').value = worker.email || '';
+                document.getElementById('workerRate').value = worker.customRate || '';
+                document.getElementById('workerModal').classList.add('active');
+            }
+        }
+
+        // Delete worker
+        function deleteWorker(workerId) {
+            if (confirm('Delete this worker? This will also remove all their labor entries.')) {
+                settings.workers = settings.workers.filter(w => w.id !== workerId);
+                entries = entries.filter(e => e.workerId !== workerId);
+                saveSettingsToStorage();
+                saveData();
+                loadWorkersList();
+            }
+        }
+
+        // Save worker
+        function saveWorker(event) {
+            event.preventDefault();
+            
+            const workerData = {
+                id: editingWorkerId || Date.now(),
+                name: document.getElementById('workerName').value,
+                username: document.getElementById('workerUsername').value,
+                password: document.getElementById('workerPassword').value,
+                email: document.getElementById('workerEmail').value || '',
+                role: 'worker',
+                customRate: parseFloat(document.getElementById('workerRate').value) || null
+            };
+            
+            if (editingWorkerId) {
+                const index = settings.workers.findIndex(w => w.id === editingWorkerId);
+                settings.workers[index] = workerData;
+            } else {
+                settings.workers.push(workerData);
+            }
+            
+            saveSettingsToStorage();
+            loadWorkersList();
+            closeWorkerModal();
+        }
+
+        // Open modal
+        function openModal(entry = null) {
+            const modal = document.getElementById('entryModal');
+            const modalTitle = document.getElementById('modalTitle');
+            
+            // Update worker select if manager
+            if (currentLoggedInUser.role === 'manager') {
+                const workerSelect = document.getElementById('workerSelect');
+                const workers = settings.workers.filter(w => w.role === 'worker');
+                workerSelect.innerHTML = '<option value="">Select worker</option>' +
+                    workers.map(w => `<option value="${w.id}">${w.name}</option>`).join('');
+            }
+            
+            if (entry) {
+                modalTitle.textContent = 'Edit Labor Entry';
+                editingId = entry.id;
+                if (currentLoggedInUser.role === 'manager') {
+                    document.getElementById('workerSelect').value = entry.workerId;
+                }
+                document.getElementById('date').value = entry.date;
+                document.getElementById('hoursWorked').value = entry.hoursWorked;
+                document.getElementById('operation').value = entry.operation;
+                document.getElementById('fieldLocation').value = entry.fieldLocation || '';
+                document.getElementById('cropType').value = entry.cropType || '';
+                document.getElementById('equipment').value = entry.equipment || '';
+                document.getElementById('notes').value = entry.notes || '';
+            } else {
+                modalTitle.textContent = 'New Labor Entry';
+                editingId = null;
+                document.getElementById('entryForm').reset();
+                document.getElementById('date').value = new Date().toISOString().split('T')[0];
+            }
+            
+            modal.classList.add('active');
+        }
+
+        // Close modal
+        function closeModal() {
+            document.getElementById('entryModal').classList.remove('active');
+            editingId = null;
+        }
+
+        // Calculate pay for an entry
+        function calculatePay(entry) {
+            const worker = settings.workers.find(w => w.id === entry.workerId);
+            let rate = 0;
+            
+            if (worker && worker.customRate) {
+                rate = worker.customRate;
+            } else {
+                rate = settings.operationRates[entry.operation] || 0;
+            }
+            
+            return parseFloat(entry.hoursWorked) * rate;
+        }
+
+        // Save entry
+        function saveEntry(event) {
+            event.preventDefault();
+            
+            let workerId;
+            if (currentLoggedInUser.role === 'manager') {
+                workerId = parseInt(document.getElementById('workerSelect').value);
+            } else {
+                workerId = currentLoggedInUser.id;
+            }
+            
+            const entry = {
+                id: editingId || Date.now(),
+                workerId: workerId,
+                workerName: settings.workers.find(w => w.id === workerId).name,
+                date: document.getElementById('date').value,
+                hoursWorked: document.getElementById('hoursWorked').value,
+                operation: document.getElementById('operation').value,
+                fieldLocation: document.getElementById('fieldLocation').value,
+                cropType: document.getElementById('cropType').value,
+                equipment: document.getElementById('equipment').value,
+                notes: document.getElementById('notes').value,
+                createdAt: editingId ? entries.find(e => e.id === editingId).createdAt : new Date().toISOString()
+            };
+            
+            if (editingId) {
+                const index = entries.findIndex(e => e.id === editingId);
+                entries[index] = entry;
+            } else {
+                entries.unshift(entry);
+            }
+            
+            saveData();
+            updateDisplay();
+            closeModal();
+        }
+
+        // Delete entry
+        function deleteEntry(id) {
+            if (confirm('Delete this entry?')) {
+                entries = entries.filter(e => e.id !== id);
+                saveData();
+                updateDisplay();
+            }
+        }
+
+        // Get filtered entries
+        function getFilteredEntries() {
+            const operationFilter = document.getElementById('filterOperation').value;
+            let workerFilter = 'all';
+            
+            if (currentLoggedInUser.role === 'manager') {
+                workerFilter = document.getElementById('filterWorker').value;
+            }
+            
+            return entries.filter(entry => {
+                // Workers only see their own entries
+                if (currentLoggedInUser.role !== 'manager' && entry.workerId !== currentLoggedInUser.id) {
+                    return false;
+                }
+                
+                if (operationFilter !== 'all' && entry.operation !== operationFilter) return false;
+                if (workerFilter !== 'all' && entry.workerId !== parseInt(workerFilter)) return false;
+                return true;
+            });
+        }
+
+        // Update display
+        function updateDisplay() {
+            updateSummary();
+            updateFilters();
+            updateTable();
+        }
+
+        // Update summary
+        function updateSummary() {
+            const filtered = getFilteredEntries();
+            const totalHours = filtered.reduce((sum, e) => sum + parseFloat(e.hoursWorked || 0), 0);
+            const totalPay = filtered.reduce((sum, e) => sum + calculatePay(e), 0);
+            const uniqueWorkers = [...new Set(entries.map(e => e.workerId))].length;
+            
+            document.getElementById('totalHours').textContent = totalHours.toFixed(2);
+            document.getElementById('totalEntries').textContent = filtered.length;
+            
+            if (currentLoggedInUser.role === 'manager') {
+                document.getElementById('totalPay').textContent = '$' + totalPay.toFixed(2);
+                document.getElementById('activeWorkers').textContent = uniqueWorkers;
+            }
+        }
+
+        // Update filters
+        function updateFilters() {
+            const operationFilter = document.getElementById('filterOperation');
+            const currentOpValue = operationFilter.value;
+            
+            operationFilter.innerHTML = '<option value="all">All Operations</option>';
+            operations.forEach(op => {
+                operationFilter.innerHTML += `<option value="${op}">${op}</option>`;
+            });
+            operationFilter.value = currentOpValue;
+            
+            if (currentLoggedInUser.role === 'manager') {
+                const workerFilter = document.getElementById('filterWorker');
+                const currentWorkerValue = workerFilter.value;
+                const workers = settings.workers.filter(w => w.role === 'worker');
+                
+                workerFilter.innerHTML = '<option value="all">All Workers</option>';
+                workers.forEach(worker => {
+                    workerFilter.innerHTML += `<option value="${worker.id}">${worker.name}</option>`;
+                });
+                workerFilter.value = currentWorkerValue;
+            }
+        }
+
+        // Filter entries
+        function filterEntries() {
+            updateTable();
+            updateSummary();
+        }
+
+        // Update table
+        function updateTable() {
+            const tbody = document.getElementById('entriesTableBody');
+            const filtered = getFilteredEntries();
+            
+            if (filtered.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="9">
+                            <div class="empty-state">
+                                <p style="font-size: 1.125rem; margin-bottom: 0.5rem;">No labor entries found</p>
+                                <p>Add a new entry to get started</p>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            } else {
+                tbody.innerHTML = filtered.map(entry => {
+                    const pay = calculatePay(entry);
+                    const worker = settings.workers.find(w => w.id === entry.workerId);
+                    let rate = worker && worker.customRate ? worker.customRate : settings.operationRates[entry.operation] || 0;
+                    
+                    return `
+                        <tr>
+                            <td>${new Date(entry.date).toLocaleDateString()}</td>
+                            ${currentLoggedInUser.role === 'manager' ? `<td>${entry.workerName}</td>` : ''}
+                            <td>${entry.hoursWorked}</td>
+                            <td><span class="operation-badge">${entry.operation}</span></td>
+                            <td class="hide-mobile">${entry.fieldLocation || '-'}</td>
+                            <td class="hide-mobile">${entry.cropType || '-'}</td>
+                            ${currentLoggedInUser.role === 'manager' ? `<td>$${rate.toFixed(2)}</td>` : ''}
+                            ${currentLoggedInUser.role === 'manager' ? `<td>$${pay.toFixed(2)}</td>` : ''}
+                            <td style="text-align: right;">
+                                <button class="action-btn" onclick='openModal(${JSON.stringify(entry).replace(/'/g, "&apos;")})' title="Edit">✏️</button>
+                                <button class="action-btn" onclick="deleteEntry(${entry.id})" title="Delete">🗑️</button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+            
+            document.getElementById('exportBtn').disabled = filtered.length === 0;
+        }
+
+        // Export to CSV
+        function exportToCSV() {
+            const filtered = getFilteredEntries();
+            if (filtered.length === 0) return;
+            
+            let headers = ['Date', 'Worker', 'Hours', 'Operation', 'Field', 'Crop', 'Equipment', 'Notes'];
+            if (currentLoggedInUser.role === 'manager') {
+                headers.push('Rate', 'Pay');
+            }
+            
+            const rows = filtered.map(entry => {
+                const pay = calculatePay(entry);
+                const worker = settings.workers.find(w => w.id === entry.workerId);
+                let rate = worker && worker.customRate ? worker.customRate : settings.operationRates[entry.operation] || 0;
+                
+                let row = [
+                    entry.date,
+                    entry.workerName,
+                    entry.hoursWorked,
+                    entry.operation,
+                    entry.fieldLocation || '',
+                    entry.cropType || '',
+                    entry.equipment || '',
+                    entry.notes || ''
+                ];
+                
+                if (currentLoggedInUser.role === 'manager') {
+                    row.push(rate.toFixed(2), pay.toFixed(2));
+                }
+                
+                return row;
+            });
+            
+            const csv = [
+                headers.join(','),
+                ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+            ].join('\n');
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `farm-labor-${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+
+        // Send email reports
+        async function sendEmailReports() {
+            if (!settings.email.publicKey || !settings.email.serviceId || !settings.email.templateId) {
+                alert('Please configure EmailJS settings in Manager Settings first.');
+                return;
+            }
+
+            if (settings.email.managerEmails.length === 0) {
+                alert('Please add at least one manager email address in Manager Settings.');
+                return;
+            }
+
+            const sendBtn = document.getElementById('sendReportsBtn');
+            sendBtn.disabled = true;
+            sendBtn.textContent = '📧 Sending...';
+
+            try {
+                // Generate date range (last 14 days)
+                const endDate = new Date();
+                const startDate = new Date();
+                startDate.setDate(startDate.getDate() - 14);
+                
+                const reportPeriod = `${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}`;
+
+                // Get entries from last 14 days
+                const recentEntries = entries.filter(e => {
+                    const entryDate = new Date(e.date);
+                    return entryDate >= startDate && entryDate <= endDate;
+                });
+
+                // Send manager summary report
+                await sendManagerReport(recentEntries, reportPeriod);
+
+                // Send individual worker reports if enabled
+                if (settings.email.sendWorkerReports) {
+                    await sendWorkerReports(recentEntries, reportPeriod);
+                }
+
+                // Update last sent timestamp
+                settings.email.lastSent = new Date().toISOString();
+                saveSettingsToStorage();
+
+                alert('✅ Reports sent successfully!');
+                checkEmailReportDue();
+                updateLastSentStatus();
+
+            } catch (error) {
+                console.error('Email error:', error);
+                alert('❌ Error sending reports: ' + error.message);
+            } finally {
+                sendBtn.disabled = false;
+                sendBtn.textContent = '📧 Send Reports';
+            }
+        }
+
+        // Send manager summary report
+        async function sendManagerReport(recentEntries, reportPeriod) {
+            // Calculate summary stats
+            const totalHours = recentEntries.reduce((sum, e) => sum + parseFloat(e.hoursWorked), 0);
+            const totalPay = recentEntries.reduce((sum, e) => sum + calculatePay(e), 0);
+            const workerBreakdown = {};
+
+            recentEntries.forEach(entry => {
+                if (!workerBreakdown[entry.workerName]) {
+                    workerBreakdown[entry.workerName] = { hours: 0, pay: 0, entries: 0 };
+                }
+                workerBreakdown[entry.workerName].hours += parseFloat(entry.hoursWorked);
+                workerBreakdown[entry.workerName].pay += calculatePay(entry);
+                workerBreakdown[entry.workerName].entries += 1;
+            });
+
+            // Generate HTML report
+            let reportHTML = `
+                <h2>Labor Summary Report</h2>
+                <p><strong>Period:</strong> ${reportPeriod}</p>
+                <p><strong>Total Hours:</strong> ${totalHours.toFixed(2)}</p>
+                <p><strong>Total Payroll:</strong> $${totalPay.toFixed(2)}</p>
+                <p><strong>Total Entries:</strong> ${recentEntries.length}</p>
+                
+                <h3>Worker Breakdown</h3>
+                <table border="1" cellpadding="8" style="border-collapse: collapse; width: 100%;">
+                    <tr style="background: #f3f4f6;">
+                        <th>Worker</th>
+                        <th>Hours</th>
+                        <th>Pay</th>
+                        <th>Entries</th>
+                    </tr>
+                    ${Object.entries(workerBreakdown).map(([name, data]) => `
+                        <tr>
+                            <td>${name}</td>
+                            <td>${data.hours.toFixed(2)}</td>
+                            <td>$${data.pay.toFixed(2)}</td>
+                            <td>${data.entries}</td>
+                        </tr>
+                    `).join('')}
+                </table>
+                
+                <h3>Recent Entries</h3>
+                <table border="1" cellpadding="8" style="border-collapse: collapse; width: 100%; font-size: 0.9em;">
+                    <tr style="background: #f3f4f6;">
+                        <th>Date</th>
+                        <th>Worker</th>
+                        <th>Hours</th>
+                        <th>Operation</th>
+                        <th>Pay</th>
+                    </tr>
+                    ${recentEntries.slice(0, 20).map(entry => `
+                        <tr>
+                            <td>${new Date(entry.date).toLocaleDateString()}</td>
+                            <td>${entry.workerName}</td>
+                            <td>${entry.hoursWorked}</td>
+                            <td>${entry.operation}</td>
+                            <td>$${calculatePay(entry).toFixed(2)}</td>
+                        </tr>
+                    `).join('')}
+                </table>
+                ${recentEntries.length > 20 ? '<p><em>Showing first 20 entries. Full details available in the app.</em></p>' : ''}
+            `;
+
+            // Send to all manager emails
+            for (const email of settings.email.managerEmails) {
+                await emailjs.send(
+                    settings.email.serviceId,
+                    settings.email.templateId,
+                    {
+                        to_email: email,
+                        manager_name: 'Manager',
+                        report_period: reportPeriod,
+                        report_html: reportHTML
+                    }
+                );
+            }
+        }
+
+        // Send individual worker reports
+        async function sendWorkerReports(recentEntries, reportPeriod) {
+            const workers = settings.workers.filter(w => w.role === 'worker' && w.email);
+
+            for (const worker of workers) {
+                const workerEntries = recentEntries.filter(e => e.workerId === worker.id);
+                
+                if (workerEntries.length === 0) continue;
+
+                const totalHours = workerEntries.reduce((sum, e) => sum + parseFloat(e.hoursWorked), 0);
+                const totalPay = workerEntries.reduce((sum, e) => sum + calculatePay(e), 0);
+
+                let reportHTML = `
+                    <h2>Your Labor Report</h2>
+                    <p><strong>Worker:</strong> ${worker.name}</p>
+                    <p><strong>Period:</strong> ${reportPeriod}</p>
+                    <p><strong>Total Hours:</strong> ${totalHours.toFixed(2)}</p>
+                    <p><strong>Total Earnings:</strong> $${totalPay.toFixed(2)}</p>
+                    
+                    <h3>Your Entries</h3>
+                    <table border="1" cellpadding="8" style="border-collapse: collapse; width: 100%;">
+                        <tr style="background: #f3f4f6;">
+                            <th>Date</th>
+                            <th>Hours</th>
+                            <th>Operation</th>
+                            <th>Field</th>
+                            <th>Pay</th>
+                        </tr>
+                        ${workerEntries.map(entry => `
+                            <tr>
+                                <td>${new Date(entry.date).toLocaleDateString()}</td>
+                                <td>${entry.hoursWorked}</td>
+                                <td>${entry.operation}</td>
+                                <td>${entry.fieldLocation || '-'}</td>
+                                <td>$${calculatePay(entry).toFixed(2)}</td>
+                            </tr>
+                        `).join('')}
+                    </table>
+                `;
+
+                await emailjs.send(
+                    settings.email.serviceId,
+                    settings.email.templateId,
+                    {
+                        to_email: worker.email,
+                        manager_name: worker.name,
+                        report_period: reportPeriod,
+                        report_html: reportHTML
+                    }
+                );
+            }
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', init);
+
+        // Close modals when clicking outside
+        document.getElementById('entryModal').addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+        
+        document.getElementById('workerModal').addEventListener('click', function(e) {
+            if (e.target === this) closeWorkerModal();
+        });
+    </script>
+</body>
+</html>
